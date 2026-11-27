@@ -827,3 +827,33 @@ body.mode-hud {
   box-shadow: var(--shadow-md);
 }
 
+.status-select {
+  width: auto;
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.status-select.st-completada,
+.status-select.st-activo {
+  border-color: rgba(31, 122, 76, 0.45);
+  background: rgba(31, 122, 76, 0.08);
+  color: var(--green-dark);
+}
+
+.status-select.st-en_progreso,
+.status-select.st-pausado {
+  border-color: rgba(184, 115, 51, 0.45);
+  background: rgba(184, 115, 51, 0.1);
+  color: #8a511c;
+}
+
+.status-select.st-pendiente,
+.status-select.st-completado {
+  border-color: rgba(111, 78, 55, 0.35);
+  background: rgba(111, 78, 55, 0.08);
+  color: var(--coffee-dark);
+}
+

@@ -90,6 +90,11 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
     onRefresh();
   };
 
+  const handleStatusChange = async (taskId, status) => {
+    await window.jarvis.tasks.update(taskId, { status });
+    onRefresh();
+  };
+
   const cycleStatus = async (task) => {
     const next =
       task.status === 'pendiente' ? 'en_progreso' : task.status === 'en_progreso' ? 'completada' : 'pendiente';
@@ -241,8 +246,18 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
                 {t.description}
               </p>
             )}
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {!isKanban && <span>Estado: {t.status.replace('_', ' ')}</span>}
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              <select
+                className={`select status-select st-${t.status}`}
+                value={t.status}
+                onChange={(e) => handleStatusChange(t.id, e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                title="Cambiar estatus de la tarea"
+              >
+                <option value="pendiente">Pendiente</option>
+                <option value="en_progreso">En Progreso</option>
+                <option value="completada">Completada</option>
+              </select>
               {t.dueDate && <span>📅 {t.dueDate}</span>}
             </div>
           </div>
@@ -442,13 +457,15 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
                 {filtered.map((t) => (
                   <tr key={t.id}>
                     <td>
-                      <button
-                        className="btn btn-sm"
-                        style={{ padding: '3px 8px', fontSize: 11.5 }}
-                        onClick={() => cycleStatus(t)}
+                      <select
+                        className={`select status-select st-${t.status}`}
+                        value={t.status}
+                        onChange={(e) => handleStatusChange(t.id, e.target.value)}
                       >
-                        {t.status.replace('_', ' ')}
-                      </button>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_progreso">En Progreso</option>
+                        <option value="completada">Completada</option>
+                      </select>
                     </td>
                     <td style={{ fontWeight: 500, textDecoration: t.status === 'completada' ? 'line-through' : 'none' }}>
                       {t.title}

@@ -257,18 +257,17 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
               )}
             </div>
             <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
-              {!isKanban && (
-                <select
-                  className="select"
-                  style={{ width: 'auto', padding: '4px 7px', fontSize: 11.5 }}
-                  value={p.status}
-                  onChange={(e) => handleStatusChange(p.id, e.target.value)}
-                >
-                  <option value="activo">Activo</option>
-                  <option value="pausado">Pausado</option>
-                  <option value="completado">Completado</option>
-                </select>
-              )}
+              <select
+                className={`select status-select st-${p.status}`}
+                value={p.status}
+                onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                title="Cambiar estatus del proyecto"
+              >
+                <option value="activo">Activo</option>
+                <option value="pausado">Pausado</option>
+                <option value="completado">Completado</option>
+              </select>
               <button className="btn btn-sm" onClick={() => startEditProject(p)} title="Editar proyecto">
                 <Pencil size={13} />
               </button>
@@ -596,8 +595,7 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
                     </td>
                     <td>
                       <select
-                        className="select"
-                        style={{ width: 'auto', padding: '3px 6px', fontSize: 11.5 }}
+                        className={`select status-select st-${p.status}`}
                         value={p.status}
                         onChange={(e) => handleStatusChange(p.id, e.target.value)}
                       >
