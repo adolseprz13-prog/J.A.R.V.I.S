@@ -257,17 +257,33 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
             </div>
           </form>
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                <h3 style={{ fontSize: 15, color: 'var(--coffee-dark)', fontWeight: 700 }}>{p.name}</h3>
-                <span className={`priority-badge priority-${projPriority}`}>{projPriority}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <h3
+                style={{
+                  fontSize: 15,
+                  color: 'var(--coffee-dark)',
+                  fontWeight: 700,
+                  lineHeight: 1.3,
+                  wordBreak: 'break-word',
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {p.name}
+              </h3>
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                <button className="btn btn-sm" onClick={() => startEditProject(p)} title="Editar proyecto">
+                  <Pencil size={13} />
+                </button>
+                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(p.id)} title="Eliminar proyecto">
+                  <Trash2 size={13} />
+                </button>
               </div>
-              {p.description && (
-                <p style={{ fontSize: 12.2, color: 'var(--text-muted)', marginTop: 4 }}>{p.description}</p>
-              )}
             </div>
-            <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span className={`priority-badge priority-${projPriority}`}>{projPriority}</span>
               <select
                 className={`select status-select st-${p.status}`}
                 value={p.status}
@@ -279,13 +295,11 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
                 <option value="pausado">Pausado</option>
                 <option value="completado">Completado</option>
               </select>
-              <button className="btn btn-sm" onClick={() => startEditProject(p)} title="Editar proyecto">
-                <Pencil size={13} />
-              </button>
-              <button className="btn btn-sm btn-danger" onClick={() => handleDelete(p.id)} title="Eliminar proyecto">
-                <Trash2 size={13} />
-              </button>
             </div>
+
+            {p.description && (
+              <p style={{ fontSize: 12.2, color: 'var(--text-muted)', lineHeight: 1.4 }}>{p.description}</p>
+            )}
           </div>
         )}
 
