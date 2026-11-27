@@ -17,6 +17,7 @@ import {
   ChevronUp,
   KanbanSquare,
 } from 'lucide-react';
+import AttachmentsList from './AttachmentsList';
 
 const PRIORITY_ORDER = { alta: 0, media: 1, baja: 2 };
 const PROJECT_COLUMNS = [
@@ -155,6 +156,19 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
 
   const handleDeleteMilestone = async (projectId, milestoneId) => {
     await window.jarvis.projects.deleteMilestone(projectId, milestoneId);
+    onRefresh();
+  };
+
+  const handleMilestoneAttachmentsChange = async (project, milestoneId, attachments) => {
+    const updatedMilestones = (project.milestones || []).map((m) =>
+      m.id === milestoneId ? { ...m, attachments } : m
+    );
+    await window.jarvis.projects.update(project.id, { milestones: updatedMilestones });
+    onRefresh();
+  };
+
+  const handleTaskAttachmentsChange = async (taskId, attachments) => {
+    await window.jarvis.tasks.update(taskId, { attachments });
     onRefresh();
   };
 
@@ -398,87 +412,96 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
                     key={ms.id}
                     style={{
                       display: 'flex',
-                      alignItems: 'center',
-                      gap: 7,
+                      flexDirection: 'column',
+                      gap: 4,
                       fontSize: 12.5,
-                      padding: '5px 8px',
+                      padding: '6px 8px',
                       borderRadius: 6,
                       background: 'var(--bg-surface-soft)',
                     }}
                   >
-                    <button
-                      onClick={() => handleToggleMilestone(p.id, ms.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: ms.done ? '#1f7a4c' : '#6b5e54',
-                      }}
-                    >
-                      {ms.done ? <CheckSquare size={15} /> : <Square size={15} />}
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <button
+                        onClick={() => handleToggleMilestone(p.id, ms.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: ms.done ? '#1f7a4c' : '#6b5e54',
+                        }}
+                      >
+                        {ms.done ? <CheckSquare size={15} /> : <Square size={15} />}
+                      </button>
 
-                    {isEditingMs ? (
-                      <>
-                        <input
-                          className="input"
-                          style={{ padding: '4px 8px', fontSize: 12, flex: 1 }}
-                          value={editingMilestone.title}
-                          onChange={(e) => setEditingMilestone((prev) => ({ ...prev, title: e.target.value }))}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleSaveMilestoneTitle(p);
-                            } else if (e.key === 'Escape') {
-                              setEditingMilestone(null);
+                      {isEditingMs ? (
+                        <>
+                          <input
+                            className="input"
+                            style={{ padding: '4px 8px', fontSize: 12, flex: 1 }}
+                            value={editingMilestone.title}
+                            onChange={(e) => setEditingMilestone((prev) => ({ ...prev, title: e.target.value }))}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleSaveMilestoneTitle(p);
+                              } else if (e.key === 'Escape') {
+                                setEditingMilestone(null);
+                              }
+                            }}
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleSaveMilestoneTitle(p)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1f7a4c' }}
+                            title="Guardar hito"
+                          >
+                            <Check size={14} />
+                          </button>
+                          <button
+                            onClick={() => setEditingMilestone(null)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            title="Cancelar"
+                          >
+                            <X size={14} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span
+                            style={{
+                              flex: 1,
+                              textDecoration: ms.done ? 'line-through' : 'none',
+                              color: ms.done ? 'var(--text-muted)' : 'var(--text-main)',
+                            }}
+                          >
+                            {ms.title}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setEditingMilestone({ projectId: p.id, milestoneId: ms.id, title: ms.title })
                             }
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => handleSaveMilestoneTitle(p)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1f7a4c' }}
-                          title="Guardar hito"
-                        >
-                          <Check size={14} />
-                        </button>
-                        <button
-                          onClick={() => setEditingMilestone(null)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                          title="Cancelar"
-                        >
-                          <X size={14} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span
-                          style={{
-                            flex: 1,
-                            textDecoration: ms.done ? 'line-through' : 'none',
-                            color: ms.done ? 'var(--text-muted)' : 'var(--text-main)',
-                          }}
-                        >
-                          {ms.title}
-                        </span>
-                        <button
-                          onClick={() =>
-                            setEditingMilestone({ projectId: p.id, milestoneId: ms.id, title: ms.title })
-                          }
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                          title="Editar hito"
-                        >
-                          <Pencil size={12} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMilestone(p.id, ms.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                          title="Eliminar hito"
-                        >
-                          <X size={13} />
-                        </button>
-                      </>
-                    )}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            title="Editar hito"
+                          >
+                            <Pencil size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMilestone(p.id, ms.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            title="Eliminar hito"
+                          >
+                            <X size={13} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <div style={{ paddingLeft: 22 }}>
+                      <AttachmentsList
+                        attachments={ms.attachments || []}
+                        onChange={(next) => handleMilestoneAttachmentsChange(p, ms.id, next)}
+                        compact
+                      />
+                    </div>
                   </div>
                 );
               })}
@@ -733,6 +756,11 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
                             <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>📅 {t.dueDate}</span>
                           )}
                         </div>
+                        <AttachmentsList
+                          attachments={t.attachments || []}
+                          onChange={(next) => handleTaskAttachmentsChange(t.id, next)}
+                          compact
+                        />
                       </div>
                     ))
                   )}
@@ -1008,8 +1036,8 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
                       key={ms.id}
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
+                        flexDirection: 'column',
+                        gap: 5,
                         fontSize: 13,
                         padding: '8px 10px',
                         borderRadius: 8,
@@ -1017,79 +1045,88 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
                         border: '1px solid var(--border-light)',
                       }}
                     >
-                      <button
-                        onClick={() => handleToggleMilestone(modalProject.id, ms.id)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: ms.done ? '#1f7a4c' : '#6b5e54',
-                        }}
-                      >
-                        {ms.done ? <CheckSquare size={17} /> : <Square size={17} />}
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <button
+                          onClick={() => handleToggleMilestone(modalProject.id, ms.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: ms.done ? '#1f7a4c' : '#6b5e54',
+                          }}
+                        >
+                          {ms.done ? <CheckSquare size={17} /> : <Square size={17} />}
+                        </button>
 
-                      {isEditingMs ? (
-                        <>
-                          <input
-                            className="input"
-                            style={{ padding: '4px 8px', fontSize: 12.5, flex: 1 }}
-                            value={editingMilestone.title}
-                            onChange={(e) => setEditingMilestone((prev) => ({ ...prev, title: e.target.value }))}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleSaveMilestoneTitle(modalProject);
-                              } else if (e.key === 'Escape') {
-                                setEditingMilestone(null);
+                        {isEditingMs ? (
+                          <>
+                            <input
+                              className="input"
+                              style={{ padding: '4px 8px', fontSize: 12.5, flex: 1 }}
+                              value={editingMilestone.title}
+                              onChange={(e) => setEditingMilestone((prev) => ({ ...prev, title: e.target.value }))}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleSaveMilestoneTitle(modalProject);
+                                } else if (e.key === 'Escape') {
+                                  setEditingMilestone(null);
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => handleSaveMilestoneTitle(modalProject)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1f7a4c' }}
+                              title="Guardar"
+                            >
+                              <Check size={15} />
+                            </button>
+                            <button
+                              onClick={() => setEditingMilestone(null)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                              title="Cancelar"
+                            >
+                              <X size={15} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span
+                              style={{
+                                flex: 1,
+                                textDecoration: ms.done ? 'line-through' : 'none',
+                                color: ms.done ? 'var(--text-muted)' : 'var(--text-main)',
+                              }}
+                            >
+                              {ms.title}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setEditingMilestone({ projectId: modalProject.id, milestoneId: ms.id, title: ms.title })
                               }
-                            }}
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleSaveMilestoneTitle(modalProject)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1f7a4c' }}
-                            title="Guardar"
-                          >
-                            <Check size={15} />
-                          </button>
-                          <button
-                            onClick={() => setEditingMilestone(null)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                            title="Cancelar"
-                          >
-                            <X size={15} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span
-                            style={{
-                              flex: 1,
-                              textDecoration: ms.done ? 'line-through' : 'none',
-                              color: ms.done ? 'var(--text-muted)' : 'var(--text-main)',
-                            }}
-                          >
-                            {ms.title}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setEditingMilestone({ projectId: modalProject.id, milestoneId: ms.id, title: ms.title })
-                            }
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                            title="Editar hito"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteMilestone(modalProject.id, ms.id)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                            title="Eliminar hito"
-                          >
-                            <X size={14} />
-                          </button>
-                        </>
-                      )}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                              title="Editar hito"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteMilestone(modalProject.id, ms.id)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                              title="Eliminar hito"
+                            >
+                              <X size={14} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <div style={{ paddingLeft: 25 }}>
+                        <AttachmentsList
+                          attachments={ms.attachments || []}
+                          onChange={(next) => handleMilestoneAttachmentsChange(modalProject, ms.id, next)}
+                          compact
+                        />
+                      </div>
                     </div>
                   );
                 })

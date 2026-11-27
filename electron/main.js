@@ -221,6 +221,47 @@ function registerIpc() {
     }
   });
 
+  // Local & Cloud Attachments (files, folders, URLs)
+  ipcMain.handle('files:pick-files', async () => {
+    const result = await dialog.showOpenDialog(hudWin || widgetWin, {
+      title: 'Seleccionar documentos o insumos de trabajo',
+      properties: ['openFile', 'multiSelections'],
+    });
+    if (result.canceled || !result.filePaths?.length) return [];
+    return result.filePaths.map((fp) => ({
+      name: path.basename(fp),
+      type: 'file',
+      target: fp,
+    }));
+  });
+
+  ipcMain.handle('files:pick-folder', async () => {
+    const result = await dialog.showOpenDialog(hudWin || widgetWin, {
+      title: 'Seleccionar carpeta de insumos',
+      properties: ['openDirectory'],
+    });
+    if (result.canceled || !result.filePaths?.length) return [];
+    return result.filePaths.map((fp) => ({
+      name: path.basename(fp) || fp,
+      type: 'folder',
+      target: fp,
+    }));
+  });
+
+  ipcMain.handle('files:open-target', async (_, target) => {
+    if (!target || typeof target !== 'string') return { ok: false, error: 'Ruta vacía' };
+    const trimmed = target.trim();
+    if (/^https?:\/\//i.test(trimmed)) {
+      await shell.openExternal(trimmed);
+      return { ok: true };
+    }
+    const errMsg = await shell.openPath(trimmed);
+    if (errMsg) {
+      return { ok: false, error: errMsg };
+    }
+    return { ok: true };
+  });
+
   ipcMain.on('window:move-widget', (_, { dx, dy }) => {
     if (!widgetWin || widgetWin.isDestroyed()) return;
     const b = widgetWin.getBounds();

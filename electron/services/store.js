@@ -141,6 +141,7 @@ class Store {
       status: ['pendiente', 'en_progreso', 'completada'].includes(input.status) ? input.status : 'pendiente',
       dueDate: input.dueDate || '',
       projectId: input.projectId || '',
+      attachments: Array.isArray(input.attachments) ? input.attachments : [],
       createdAt: new Date().toISOString(),
     };
     this.data.tasks.unshift(task);
@@ -226,6 +227,7 @@ class Store {
       id: `ms-${crypto.randomUUID().slice(0, 6)}`,
       title: String(title || '').trim(),
       done: false,
+      attachments: [],
     });
     this._recalcProgress(project);
     this._save();

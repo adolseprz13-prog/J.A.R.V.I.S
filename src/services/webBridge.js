@@ -296,6 +296,17 @@ export function installWebBridgeIfNeeded() {
         if (url) window.open(url, '_blank', 'noopener,noreferrer');
       },
     },
+    files: {
+      pickFiles: async () => [],
+      pickFolder: async () => [],
+      openTarget: async (target) => {
+        if (target && /^https?:\/\//i.test(target.trim())) {
+          window.open(target.trim(), '_blank', 'noopener,noreferrer');
+          return { ok: true };
+        }
+        return { ok: false, error: 'Las rutas locales de PC solo se pueden abrir en Windows.' };
+      },
+    },
     onTriggerVoice: () => () => {},
     onDataUpdated: (cb) => {
       dataListeners.add(cb);

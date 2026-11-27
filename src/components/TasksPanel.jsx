@@ -14,6 +14,7 @@ import {
   Columns3,
   Table2,
 } from 'lucide-react';
+import AttachmentsList from './AttachmentsList';
 
 const TASK_COLUMNS = [
   { key: 'pendiente', label: 'Pendientes', dot: '#6f4e37' },
@@ -92,6 +93,11 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
 
   const handleStatusChange = async (taskId, status) => {
     await window.jarvis.tasks.update(taskId, { status });
+    onRefresh();
+  };
+
+  const handleAttachmentsChange = async (taskId, attachments) => {
+    await window.jarvis.tasks.update(taskId, { attachments });
     onRefresh();
   };
 
@@ -260,6 +266,11 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
               </select>
               {t.dueDate && <span>📅 {t.dueDate}</span>}
             </div>
+            <AttachmentsList
+              attachments={t.attachments || []}
+              onChange={(next) => handleAttachmentsChange(t.id, next)}
+              compact={isKanban}
+            />
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
@@ -449,6 +460,7 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
                   <th>Tarea</th>
                   <th>Prioridad</th>
                   <th>Proyecto</th>
+                  <th>Insumos / Adjuntos</th>
                   <th>Vence</th>
                   <th style={{ width: 92 }}>Acciones</th>
                 </tr>
@@ -474,6 +486,13 @@ export default function TasksPanel({ tasks, projects, onRefresh }) {
                       <span className={`priority-badge priority-${t.priority}`}>{t.priority}</span>
                     </td>
                     <td>{t.projectId && projectMap[t.projectId] ? projectMap[t.projectId] : '—'}</td>
+                    <td>
+                      <AttachmentsList
+                        attachments={t.attachments || []}
+                        onChange={(next) => handleAttachmentsChange(t.id, next)}
+                        compact
+                      />
+                    </td>
                     <td>{t.dueDate || '—'}</td>
                     <td>
                       <div style={{ display: 'flex', gap: 5 }}>

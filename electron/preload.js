@@ -11,6 +11,11 @@ contextBridge.exposeInMainWorld('jarvis', {
     showWidgetMenu: () => ipcRenderer.send('window:show-widget-menu'),
     openExternal: (url) => ipcRenderer.invoke('window:open-external', url),
   },
+  files: {
+    pickFiles: () => ipcRenderer.invoke('files:pick-files'),
+    pickFolder: () => ipcRenderer.invoke('files:pick-folder'),
+    openTarget: (target) => ipcRenderer.invoke('files:open-target', target),
+  },
   onTriggerVoice: (cb) => {
     const handler = () => cb();
     ipcRenderer.on('jarvis:trigger-voice', handler);
