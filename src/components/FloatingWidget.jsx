@@ -11,6 +11,7 @@ export default function FloatingWidget() {
 
   // Follow desktop mouse cursor in real time
   useEffect(() => {
+    document.title = '';
     const offCursor = window.jarvis?.onCursorMove?.(({ rx, ry }) => {
       setEyeOffset({ x: rx * 3.6, y: ry * 2.8 });
     });
@@ -125,7 +126,6 @@ export default function FloatingWidget() {
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
         onContextMenu={handleContextMenu}
-        title="J.A.R.V.I.S. — Clic para abrir | Arrastra para mover | Clic derecho para menú"
       >
         <svg viewBox="0 0 110 118" width="94" height="100" className="coffee-svg">
           <defs>

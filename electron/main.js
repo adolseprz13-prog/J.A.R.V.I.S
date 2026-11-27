@@ -55,13 +55,19 @@ function createWidgetWindow() {
     height: winH,
     x: width - winW - 28,
     y: height - winH - 28,
+    title: '',
     frame: false,
+    thickFrame: false,
     transparent: true,
+    backgroundColor: '#00000000',
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
     hasShadow: false,
-    focusable: true,
+    focusable: false,
     icon: getIconPath() || undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -214,9 +220,9 @@ function registerIpc() {
   });
 
   ipcMain.on('window:move-widget', (_, { dx, dy }) => {
-    if (!widgetWin) return;
-    const [x, y] = widgetWin.getPosition();
-    widgetWin.setPosition(Math.round(x + dx), Math.round(y + dy), false);
+    if (!widgetWin || widgetWin.isDestroyed()) return;
+    const b = widgetWin.getBounds();
+    widgetWin.setBounds({ x: Math.round(b.x + dx), y: Math.round(b.y + dy), width: b.width, height: b.height }, false);
   });
 
   ipcMain.on('window:widget-ignore-mouse', (_, ignore) => {
