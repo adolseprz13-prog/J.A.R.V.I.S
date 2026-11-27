@@ -15,6 +15,7 @@ import {
   ListChecks,
   ChevronDown,
   ChevronUp,
+  KanbanSquare,
 } from 'lucide-react';
 
 const PRIORITY_ORDER = { alta: 0, media: 1, baja: 2 };
@@ -37,6 +38,9 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
 
   const [draggedProjId, setDraggedProjId] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverTrelloProjId, setDragOverTrelloProjId] = useState(null);
+  const [newTaskByProj, setNewTaskByProj] = useState({});
 
   const [editingProjectId, setEditingProjectId] = useState(null);
   const [editProjectForm, setEditProjectForm] = useState({
@@ -161,6 +165,41 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
 
   const handleDelete = async (projectId) => {
     await window.jarvis.projects.delete(projectId);
+    onRefresh();
+  };
+
+  // Trello view task helpers
+  const handleQuickAddTask = async (projectId) => {
+    const title = (newTaskByProj[projectId] || '').trim();
+    if (!title) return;
+    await window.jarvis.tasks.create({
+      title,
+      priority: 'media',
+      status: 'pendiente',
+      projectId: projectId === '__unassigned__' ? '' : projectId,
+    });
+    setNewTaskByProj((prev) => ({ ...prev, [projectId]: '' }));
+    onRefresh();
+  };
+
+  const handleTaskStatusChange = async (taskId, status) => {
+    await window.jarvis.tasks.update(taskId, { status });
+    onRefresh();
+  };
+
+  const handleTaskDelete = async (taskId) => {
+    await window.jarvis.tasks.delete(taskId);
+    onRefresh();
+  };
+
+  const handleDropTaskOnProject = async (targetProjectId) => {
+    setDragOverTrelloProjId(null);
+    if (!draggedTaskId) return;
+    const task = tasks.find((t) => t.id === draggedTaskId);
+    setDraggedTaskId(null);
+    const nextProjId = targetProjectId === '__unassigned__' ? '' : targetProjectId;
+    if (!task || (task.projectId || '') === nextProjId) return;
+    await window.jarvis.tasks.update(task.id, { projectId: nextProjId });
     onRefresh();
   };
 
@@ -489,6 +528,12 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
               <Columns3 size={14} /> Kanban
             </button>
             <button
+              className={`view-btn ${viewMode === 'trello' ? 'active' : ''}`}
+              onClick={() => setViewMode('trello')}
+            >
+              <KanbanSquare size={14} /> Trello
+            </button>
+            <button
               className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
               onClick={() => setViewMode('list')}
             >
@@ -563,6 +608,208 @@ export default function ProjectsPanel({ projects, tasks, onRefresh }) {
             </button>
           </div>
         </form>
+      )}
+
+      {/* TRELLO VIEW (each project side-by-side with its tasks stacked below) */}
+      {viewMode === 'trello' && (
+        <div className="trello-board">
+          {visibleProjects.map((p) => {
+            const projTasks = tasks.filter((t) => t.projectId === p.id);
+            const projPriority = p.priority || 'media';
+            return (
+              <div
+                key={p.id}
+                className={`trello-col ${dragOverTrelloProjId === p.id ? 'drag-over' : ''}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverTrelloProjId(p.id);
+                }}
+                onDragLeave={() => setDragOverTrelloProjId(null)}
+                onDrop={() => handleDropTaskOnProject(p.id)}
+              >
+                {/* Project Column Header */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7, borderBottom: '1px solid var(--border-light)', paddingBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
+                    <h3 style={{ fontSize: 14.5, color: 'var(--coffee-dark)', fontWeight: 700, lineHeight: 1.3, wordBreak: 'break-word', flex: 1 }}>
+                      {p.name}
+                    </h3>
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      <button className="btn btn-sm" style={{ padding: '3px 6px' }} onClick={() => setMilestonesModalProjId(p.id)} title="Ver hitos">
+                        <ListChecks size={13} />
+                      </button>
+                      <button className="btn btn-sm" style={{ padding: '3px 6px' }} onClick={() => { setViewMode('grid'); startEditProject(p); }} title="Editar proyecto">
+                        <Pencil size={12} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <span className={`priority-badge priority-${projPriority}`}>{projPriority}</span>
+                    <select
+                      className={`select status-select st-${p.status}`}
+                      value={p.status}
+                      onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                    >
+                      <option value="activo">Activo</option>
+                      <option value="pausado">Pausado</option>
+                      <option value="completado">Completado</option>
+                    </select>
+                    <span className="kanban-count" style={{ marginLeft: 'auto' }}>
+                      {projTasks.length} {projTasks.length === 1 ? 'tarea' : 'tareas'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Hitos {(p.milestones || []).filter((m) => m.done).length}/{(p.milestones || []).length}
+                      </span>
+                      <strong style={{ color: 'var(--green)' }}>{p.progress}%</strong>
+                    </div>
+                    <div className="progress-track">
+                      <div className="progress-fill" style={{ width: `${p.progress}%` }} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stacked Tasks List */}
+                <div className="trello-tasks-list">
+                  {projTasks.length === 0 ? (
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: '16px 6px' }}>
+                      Sin tareas asignadas aún. Agrega una abajo o arrastra aquí.
+                    </div>
+                  ) : (
+                    projTasks.map((t) => (
+                      <div
+                        key={t.id}
+                        className="trello-task-card"
+                        draggable
+                        onDragStart={() => setDraggedTaskId(t.id)}
+                        onDragEnd={() => {
+                          setDraggedTaskId(null);
+                          setDragOverTrelloProjId(null);
+                        }}
+                        style={{ opacity: t.status === 'completada' ? 0.68 : 1 }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              lineHeight: 1.35,
+                              textDecoration: t.status === 'completada' ? 'line-through' : 'none',
+                              wordBreak: 'break-word',
+                              flex: 1,
+                            }}
+                          >
+                            {t.title}
+                          </span>
+                          <button
+                            onClick={() => handleTaskDelete(t.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            title="Eliminar tarea"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+
+                        {t.description && (
+                          <p style={{ fontSize: 11.8, color: 'var(--text-muted)', lineHeight: 1.35 }}>{t.description}</p>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                          <span className={`priority-badge priority-${t.priority}`}>{t.priority}</span>
+                          <select
+                            className={`select status-select st-${t.status}`}
+                            style={{ padding: '2px 6px', fontSize: 11 }}
+                            value={t.status}
+                            onChange={(e) => handleTaskStatusChange(t.id, e.target.value)}
+                          >
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_progreso">En Progreso</option>
+                            <option value="completada">Completada</option>
+                          </select>
+                          {t.dueDate && (
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>📅 {t.dueDate}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Quick Add Task inside Project Column */}
+                <div style={{ display: 'flex', gap: 6, marginTop: 'auto', paddingTop: 4 }}>
+                  <input
+                    className="input"
+                    style={{ padding: '6px 9px', fontSize: 12 }}
+                    placeholder="+ Agregar tarea..."
+                    value={newTaskByProj[p.id] || ''}
+                    onChange={(e) => setNewTaskByProj((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleQuickAddTask(p.id);
+                      }
+                    }}
+                  />
+                  <button className="btn btn-sm btn-primary" onClick={() => handleQuickAddTask(p.id)} title="Agregar tarea a este proyecto">
+                    <Plus size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Unassigned Tasks Column (if any) */}
+          {tasks.some((t) => !t.projectId) && (
+            <div
+              className={`trello-col ${dragOverTrelloProjId === '__unassigned__' ? 'drag-over' : ''}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverTrelloProjId('__unassigned__');
+              }}
+              onDragLeave={() => setDragOverTrelloProjId(null)}
+              onDrop={() => handleDropTaskOnProject('__unassigned__')}
+            >
+              <div className="kanban-col-header">
+                <span>Sin Proyecto</span>
+                <span className="kanban-count">{tasks.filter((t) => !t.projectId).length}</span>
+              </div>
+              <div className="trello-tasks-list">
+                {tasks
+                  .filter((t) => !t.projectId)
+                  .map((t) => (
+                    <div
+                      key={t.id}
+                      className="trello-task-card"
+                      draggable
+                      onDragStart={() => setDraggedTaskId(t.id)}
+                      onDragEnd={() => {
+                        setDraggedTaskId(null);
+                        setDragOverTrelloProjId(null);
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{t.title}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span className={`priority-badge priority-${t.priority}`}>{t.priority}</span>
+                        <select
+                          className={`select status-select st-${t.status}`}
+                          style={{ padding: '2px 6px', fontSize: 11 }}
+                          value={t.status}
+                          onChange={(e) => handleTaskStatusChange(t.id, e.target.value)}
+                        >
+                          <option value="pendiente">Pendiente</option>
+                          <option value="en_progreso">En Progreso</option>
+                          <option value="completada">Completada</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* KANBAN VIEW */}

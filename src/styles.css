@@ -887,3 +887,65 @@ body.mode-hud {
   gap: 14px;
 }
 
+/* ==================== TRELLO-STYLE PROJECT BOARD ==================== */
+.trello-board {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  min-height: 420px;
+}
+
+.trello-col {
+  width: 288px;
+  min-width: 288px;
+  flex-shrink: 0;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 210px);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.trello-col.drag-over {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.trello-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 2px;
+  min-height: 44px;
+}
+
+.trello-task-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 9px;
+  padding: 10px 11px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: grab;
+  transition: transform 0.14s, box-shadow 0.14s;
+}
+
+.trello-task-card:active {
+  cursor: grabbing;
+}
+
+.trello-task-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--coffee-light);
+}
+
