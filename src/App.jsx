@@ -22,6 +22,7 @@ export default function App() {
   const [googleStatus, setGoogleStatus] = useState({ hasCredentials: false, isConnected: false, userEmail: '' });
   const [voiceTriggerCount, setVoiceTriggerCount] = useState(0);
   const [clock, setClock] = useState(new Date());
+  const isMobile = Boolean(window.jarvis?.isMobile);
 
   const refreshAll = useCallback(async () => {
     const [s, t, p, g] = await Promise.all([
@@ -82,12 +83,16 @@ export default function App() {
           <span style={{ fontSize: 12, color: '#d6c7b8', fontFamily: 'var(--font-display)' }}>
             {clock.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
           </span>
-          <button className="win-btn" onClick={() => window.jarvis.window.minimizeHud()} title="Minimizar">
-            <Minus size={15} />
-          </button>
-          <button className="win-btn close" onClick={() => window.jarvis.window.closeHud()} title="Ocultar al icono flotante">
-            <X size={15} />
-          </button>
+          {!isMobile && (
+            <>
+              <button className="win-btn" onClick={() => window.jarvis.window.minimizeHud()} title="Minimizar">
+                <Minus size={15} />
+              </button>
+              <button className="win-btn close" onClick={() => window.jarvis.window.closeHud()} title="Ocultar al icono flotante">
+                <X size={15} />
+              </button>
+            </>
+          )}
         </div>
       </header>
 

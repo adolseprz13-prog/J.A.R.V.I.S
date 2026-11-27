@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Key, Globe, Volume2, Upload, CheckCircle2, ExternalLink, Unlink } from 'lucide-react';
+import { Settings, Key, Globe, Volume2, Upload, CheckCircle2, ExternalLink, Unlink, RefreshCw, Download } from 'lucide-react';
 
 export default function SettingsPanel({ settings, googleStatus, onUpdateSettings, onRefreshGoogle }) {
   const [userName, setUserName] = useState(settings?.userName || 'Señor');
@@ -12,7 +12,27 @@ export default function SettingsPanel({ settings, googleStatus, onUpdateSettings
 
   const [testMsg, setTestMsg] = useState('');
   const [googleMsg, setGoogleMsg] = useState('');
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [updateMsg, setUpdateMsg] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const handleCheckUpdate = async () => {
+    setBusy(true);
+    setUpdateMsg('Consultando última versión en GitHub...');
+    try {
+      const info = await window.jarvis.checkGithubUpdate();
+      setUpdateInfo(info);
+      setUpdateMsg(
+        info.hasUpdate
+          ? `🆕 Nueva versión disponible: ${info.latestVersion}`
+          : `✅ Estás al día (${info.latestVersion}).`
+      );
+    } catch (err) {
+      setUpdateMsg(`❌ ${err.message || err}`);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     setUserName(settings?.userName || 'Señor');
@@ -263,6 +283,44 @@ export default function SettingsPanel({ settings, googleStatus, onUpdateSettings
           <button className="btn btn-sm btn-primary" onClick={handleSaveGeneral}>
             Aplicar Voz
           </button>
+        </div>
+      </div>
+
+      {/* GitHub Updates / APK Sync Card */}
+      <div className="hud-card" style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--coffee-dark)', fontSize: 15 }}>
+            <RefreshCw size={17} color="#1f7a4c" /> Actualizaciones desde GitHub (Android APK / PC)
+          </h3>
+          <button
+            className="btn btn-sm"
+            onClick={() => window.jarvis.window.openExternal('https://github.com/adolseprz13-prog/J.A.R.V.I.S/releases')}
+          >
+            <ExternalLink size={13} /> Ver Releases
+          </button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          Cada actualización subida a tu repositorio de GitHub genera automáticamente una nueva versión de{' '}
+          <strong>JARVIS.apk</strong>. Tus tareas, proyectos e hitos se guardan de forma privada en cada dispositivo.
+        </p>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button className="btn btn-sm btn-primary" onClick={handleCheckUpdate} disabled={busy}>
+            <RefreshCw size={14} /> Buscar actualizaciones
+          </button>
+          {updateInfo?.downloadUrl && (
+            <button
+              className="btn btn-sm btn-gold"
+              onClick={() => {
+                if (updateInfo.latestVersion) {
+                  localStorage.setItem('jarvis_installed_tag', updateInfo.latestVersion);
+                }
+                window.jarvis.window.openExternal(updateInfo.downloadUrl);
+              }}
+            >
+              <Download size={14} /> Descargar JARVIS.apk ({updateInfo.latestVersion})
+            </button>
+          )}
+          {updateMsg && <span style={{ fontSize: 12.5, color: 'var(--green-dark)', fontWeight: 500 }}>{updateMsg}</span>}
         </div>
       </div>
     </div>

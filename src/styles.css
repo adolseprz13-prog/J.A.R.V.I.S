@@ -949,3 +949,74 @@ body.mode-hud {
   border-color: var(--coffee-light);
 }
 
+/* ==================== MOBILE / ANDROID RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .titlebar {
+    padding: 0 12px;
+    height: 48px;
+  }
+
+  .titlebar-sub,
+  .status-pill {
+    display: none;
+  }
+
+  .hud-body {
+    flex-direction: column-reverse;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-right: none;
+    border-top: 1px solid rgba(111, 78, 55, 0.35);
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .nav-btn {
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 8px;
+    font-size: 10.5px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+
+  .nav-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: 1px 5px;
+    font-size: 9.5px;
+  }
+
+  .main-content {
+    padding: 14px 12px;
+  }
+
+  .panel-title {
+    font-size: 14.5px;
+  }
+
+  .grid-2,
+  .grid-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .trello-col {
+    width: 265px;
+    min-width: 265px;
+    max-height: calc(100vh - 230px);
+  }
+}
+

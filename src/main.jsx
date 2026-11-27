@@ -2,10 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import FloatingWidget from './components/FloatingWidget';
+import { installWebBridgeIfNeeded } from './services/webBridge';
 import './styles.css';
 
+installWebBridgeIfNeeded();
+
 const params = new URLSearchParams(window.location.search);
-const mode = params.get('mode') === 'widget' ? 'widget' : 'hud';
+const mode = params.get('mode') === 'widget' && !window.jarvis?.isMobile ? 'widget' : 'hud';
 document.body.classList.add(`mode-${mode}`);
 
 ReactDOM.createRoot(document.getElementById('root')).render(

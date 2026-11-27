@@ -1,0 +1,9 @@
+{
+  "appId": "com.jarvis.assistant",
+  "appName": "J.A.R.V.I.S.",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#f7f4ef",
+    "allowMixedContent": true
+  }
+}

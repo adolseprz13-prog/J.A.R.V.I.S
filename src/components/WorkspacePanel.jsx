@@ -144,6 +144,40 @@ export default function WorkspacePanel({ googleStatus, onGoSettings }) {
     }
   };
 
+  if (window.jarvis?.isMobile) {
+    const mobileLinks = [
+      { name: 'Gmail', desc: 'Abrir tu bandeja de correo electrónico', url: 'https://mail.google.com', color: '#c93b4b' },
+      { name: 'Google Calendar', desc: 'Ver y agendar reuniones en tu calendario', url: 'https://calendar.google.com', color: '#1f7a4c' },
+      { name: 'Google Drive', desc: 'Explorar tus archivos y carpetas en la nube', url: 'https://drive.google.com', color: '#6f4e37' },
+      { name: 'Google Docs', desc: 'Abrir y editar tus documentos', url: 'https://docs.google.com', color: '#4a3222' },
+      { name: 'Google Sheets', desc: 'Ver y actualizar tus hojas de cálculo', url: 'https://sheets.google.com', color: '#165a38' },
+    ];
+    return (
+      <div>
+        <div className="panel-header">
+          <div className="panel-title">
+            <Globe size={20} /> GOOGLE WORKSPACE (MÓVIL)
+          </div>
+        </div>
+        <div className="grid-cards">
+          {mobileLinks.map((item) => (
+            <div key={item.name} className="hud-card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <strong style={{ color: item.color, fontSize: 15 }}>{item.name}</strong>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{item.desc}</p>
+              <button
+                className="btn btn-sm btn-primary"
+                style={{ alignSelf: 'flex-start' }}
+                onClick={() => window.jarvis.window.openExternal(item.url)}
+              >
+                <ExternalLink size={13} /> Abrir {item.name}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!googleStatus?.isConnected) {
     return (
       <div className="hud-card" style={{ textAlign: 'center', padding: 40, maxWidth: 620, margin: '30px auto' }}>
