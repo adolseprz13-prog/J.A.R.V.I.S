@@ -216,9 +216,7 @@ export async function checkGithubUpdate() {
 
 export function installWebBridgeIfNeeded() {
   if (window.jarvis) {
-    // Running inside Electron desktop — attach GitHub updater helper
-    window.jarvis.isMobile = false;
-    window.jarvis.checkGithubUpdate = checkGithubUpdate;
+    // Running inside Electron desktop (window.jarvis is frozen by contextBridge — never mutate it!)
     return;
   }
 

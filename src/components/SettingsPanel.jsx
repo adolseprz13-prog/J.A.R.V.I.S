@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Settings, Key, Globe, Volume2, Upload, CheckCircle2, ExternalLink, Unlink, RefreshCw, Download } from 'lucide-react';
+import { checkGithubUpdate } from '../services/webBridge';
 
 export default function SettingsPanel({ settings, googleStatus, onUpdateSettings, onRefreshGoogle }) {
   const [userName, setUserName] = useState(settings?.userName || 'Señor');
@@ -20,7 +21,7 @@ export default function SettingsPanel({ settings, googleStatus, onUpdateSettings
     setBusy(true);
     setUpdateMsg('Consultando última versión en GitHub...');
     try {
-      const info = await window.jarvis.checkGithubUpdate();
+      const info = await checkGithubUpdate();
       setUpdateInfo(info);
       setUpdateMsg(
         info.hasUpdate
