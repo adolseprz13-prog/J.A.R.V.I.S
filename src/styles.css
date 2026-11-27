@@ -723,3 +723,107 @@ body.mode-hud {
   background: var(--bg-surface-soft);
   color: var(--coffee-dark);
 }
+
+/* ==================== VIEW SWITCHER & KANBAN ==================== */
+.view-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-light);
+}
+
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.view-btn:hover {
+  color: var(--text-main);
+}
+
+.view-btn.active {
+  background: var(--green);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(31, 122, 76, 0.25);
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(215px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.kanban-col {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.kanban-col.drag-over {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.kanban-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--coffee-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kanban-count {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  color: var(--green-dark);
+}
+
+.kanban-card {
+  cursor: grab;
+  transition: transform 0.14s, box-shadow 0.14s;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
