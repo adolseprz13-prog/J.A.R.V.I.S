@@ -194,14 +194,21 @@ export async function checkGithubUpdate() {
     throw new Error(`No se pudo consultar GitHub (HTTP ${res.status})`);
   }
   const rel = await res.json();
+  const isMobileEnv = !window.jarvis || Boolean(window.jarvis.isMobile);
   const apkAsset = (rel.assets || []).find((a) => a.name?.toLowerCase().endsWith('.apk'));
+  const exeAsset = (rel.assets || []).find((a) => a.name?.toLowerCase().endsWith('.exe'));
+  const preferredAsset = isMobileEnv ? apkAsset || exeAsset : exeAsset || apkAsset;
   const latestTag = rel.tag_name || rel.name || APP_VERSION;
   const installedTag = localStorage.getItem('jarvis_installed_tag') || APP_VERSION;
   return {
     currentVersion: installedTag,
     latestVersion: latestTag,
     hasUpdate: latestTag !== installedTag,
-    downloadUrl: apkAsset?.browser_download_url || rel.html_url || `https://github.com/${GITHUB_REPO}/releases/latest`,
+    downloadUrl:
+      preferredAsset?.browser_download_url || rel.html_url || `https://github.com/${GITHUB_REPO}/releases/latest`,
+    assetName: preferredAsset?.name || (isMobileEnv ? 'JARVIS.apk' : 'JARVIS-Setup.exe'),
+    apkUrl: apkAsset?.browser_download_url || '',
+    exeUrl: exeAsset?.browser_download_url || '',
     releaseNotes: rel.body || '',
     publishedAt: rel.published_at || '',
   };

@@ -29,7 +29,9 @@ let googleWorkspace;
 let geminiService;
 
 function getIconPath() {
+  const unpacked = path.join(__dirname, '../assets/jarvis-icon.png').replace('app.asar', 'app.asar.unpacked');
   const candidates = [
+    unpacked,
     path.join(__dirname, '../assets/jarvis-icon.png'),
     path.join(__dirname, '../public/jarvis-icon.png'),
   ];

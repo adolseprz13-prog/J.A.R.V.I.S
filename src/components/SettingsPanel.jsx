@@ -317,7 +317,7 @@ export default function SettingsPanel({ settings, googleStatus, onUpdateSettings
                 window.jarvis.window.openExternal(updateInfo.downloadUrl);
               }}
             >
-              <Download size={14} /> Descargar JARVIS.apk ({updateInfo.latestVersion})
+              <Download size={14} /> Descargar {updateInfo.assetName || 'Actualización'} ({updateInfo.latestVersion})
             </button>
           )}
           {updateMsg && <span style={{ fontSize: 12.5, color: 'var(--green-dark)', fontWeight: 500 }}>{updateMsg}</span>}
