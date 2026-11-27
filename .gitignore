@@ -1,0 +1,17 @@
+# Dependencies & build output
+node_modules/
+dist/
+
+# Environment & credentials (never commit secrets)
+.env
+.env.*
+credentials.json
+google-credentials.json
+google-tokens.json
+google-profile.json
+jarvis-data.json
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+*.log
