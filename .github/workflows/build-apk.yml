@@ -19,10 +19,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Setup Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -30,10 +29,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install dependencies (skip Electron binary)
+      - name: Install dependencies (Linux-native, skip Electron binary)
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
-        run: npm ci
+        run: |
+          rm -f package-lock.json
+          npm install --no-audit --no-fund
 
       - name: Build web assets
         run: npm run build
@@ -45,7 +46,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
 
       - name: Prepare APK artifact
         run: |
@@ -68,13 +69,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build Windows Installer (JARVIS-Setup.exe)
-        run: npm run build:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          npm run build
+          npx electron-builder --win --publish never
 
       - name: Upload Windows EXE artifact
         uses: actions/upload-artifact@v4
@@ -84,15 +88,21 @@ jobs:
 
   publish-release:
     needs: [build-android, build-windows]
+    if: always() && (needs.build-android.result == 'success' || needs.build-windows.result == 'success')
     runs-on: ubuntu-latest
     steps:
+      - name: Prepare release folder
+        run: mkdir -p dist-release
+
       - name: Download Android APK
+        if: needs.build-android.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: JARVIS-APK
           path: dist-release
 
       - name: Download Windows Installer
+        if: needs.build-windows.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: JARVIS-Windows-EXE
@@ -108,9 +118,7 @@ jobs:
             - **Computadoras Windows:** descarga e instala **`JARVIS-Setup.exe`**
             - **Teléfonos Android:** descarga e instala **`JARVIS.apk`**
             - Cada dispositivo guarda sus propias tareas, proyectos, hitos y configuración de forma 100% privada.
-          files: |
-            dist-release/JARVIS.apk
-            dist-release/JARVIS-Setup.exe
+          files: dist-release/*
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
