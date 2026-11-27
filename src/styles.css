@@ -173,12 +173,13 @@ body.mode-hud {
 }
 
 .titlebar-logo {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1.5px solid var(--green-bright);
-  box-shadow: 0 0 8px rgba(46, 164, 99, 0.4);
-  object-fit: cover;
+  border: 1.5px solid rgba(46, 164, 99, 0.7);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px;
+  object-fit: contain;
 }
 
 .titlebar-title {
